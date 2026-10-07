@@ -41,7 +41,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.cip4.bambi.BambiTestCaseBase;
 import org.cip4.jdflib.util.FileUtil;
 import org.junit.Test;
@@ -73,6 +79,30 @@ public class BambiServerTest extends BambiTestCaseBase
 		assertNotNull(s);
 		FileUtil.forceDelete(new File(s.getUserDir().getToolPath()));
 		BambiServer.unpackLines(s.getClass(), new File(sm_dirTestDataTemp + "out"), new ByteArrayInputStream("abc\n/data/test.icc\n".getBytes()));
+	}
+
+	/**
+	 * every bundled job template must be listed, otherwise it is never unpacked and the device silently falls back to job.xml
+	 */
+	@Test
+	public void testListContainsAllJobTemplates() throws Exception
+	{
+		final List<String> listed = readResourceList();
+		final File configDir = new File(BambiServer.class.getResource("/config/job.xml").toURI()).getParentFile();
+		final File[] templates = configDir.listFiles((dir, name) -> name.startsWith("job") && name.endsWith(".xml"));
+		assertTrue(templates.length > 1);
+		for (final File template : templates)
+		{
+			assertTrue("not in list.txt: " + template.getName(), listed.contains("/config/" + template.getName()));
+		}
+	}
+
+	private List<String> readResourceList() throws IOException
+	{
+		try (InputStream in = BambiServer.class.getResourceAsStream(BambiServer.RESOURCES_FILE))
+		{
+			return IOUtils.readLines(in, StandardCharsets.UTF_8).stream().map(String::trim).filter(line -> !line.isEmpty()).collect(Collectors.toList());
+		}
 	}
 
 	@Test
