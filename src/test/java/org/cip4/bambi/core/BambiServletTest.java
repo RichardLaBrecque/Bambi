@@ -85,6 +85,7 @@ import java.util.Enumeration;
 
 import org.cip4.bambi.BambiTestCase;
 import org.cip4.bambi.server.BambiServer;
+import org.cip4.jdflib.util.CPUTimer;
 import org.junit.Test;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -155,10 +156,41 @@ public class BambiServletTest extends BambiTestCase
 	}
 
 	/**
+	 * the root device work timer must be stopped even if reading the request fails
+	 */
+	@Test
+	public void testDoGetPostEndsWorkOnIOException() throws Exception
+	{
+		startContainer();
+		final BambiServlet bs = new BambiServlet(new BambiServer());
+		final HttpServletRequest req = mock(HttpServletRequest.class);
+		when(req.getInputStream()).thenThrow(new IOException("broken stream"));
+
+		bs.doGetPost(req, mock(HttpServletResponse.class), true);
+
+		assertFalse("work timer still running", isRunning(BambiContainer.getInstance().getRootDev().getDeviceTimer(false)));
+	}
+
+	/**
+	 * CPUTimer.start() is a no-op on a running timer, so a running timer does not count another start
+	 */
+	private boolean isRunning(final CPUTimer timer)
+	{
+		final long starts = timer.getNumStarts();
+		timer.start();
+		final boolean running = timer.getNumStarts() == starts;
+		if (!running)
+		{
+			timer.stop();
+		}
+		return running;
+	}
+
+	/**
 	 * @throws Exception
 	 * @throws IOException
 	 * @throws Exception
-	 * 
+	 *
 	 */
 	@Test
 	public void testAuthMessage() throws Exception
