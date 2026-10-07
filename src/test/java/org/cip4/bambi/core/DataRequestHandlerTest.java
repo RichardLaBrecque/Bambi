@@ -75,6 +75,7 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.cip4.bambi.BambiTestCase;
 import org.cip4.bambi.core.MultiDeviceProperties.DeviceProperties;
 import org.cip4.jdflib.util.ByteArrayIOStream;
@@ -189,6 +190,20 @@ public class DataRequestHandlerTest extends BambiTestCase
 		final File file = new File(sm_dirTestDataTemp + "ID_42/JDF/a b.pdf");
 		FileUtil.createNewFile(file);
 		assertNotNull(rh.handleGet(request));
+	}
+
+	@Test
+	public void testHandleServesContent() throws Exception
+	{
+		final DataRequestHandler rh = new DataRequestHandler(getDevice(false, false), "data");
+		final ContainerRequest request = new ContainerRequest();
+		request.setRequestURI("http://dev/blub/data/content.txt");
+		final File file = new File(rh.getDataDir(request), "content.txt");
+		FileUtil.streamToFile(new ByteArrayIOStream("blahblah".getBytes()).getInputStream(), file);
+
+		final XMLResponse resp = rh.handleGet(request);
+
+		assertEquals("blahblah", new String(IOUtils.toByteArray(resp.getInputStream())));
 	}
 
 	/**

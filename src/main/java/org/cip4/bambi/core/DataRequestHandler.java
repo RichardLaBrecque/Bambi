@@ -39,6 +39,7 @@ package org.cip4.bambi.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -119,12 +120,15 @@ public class DataRequestHandler extends BambiLogFactory implements IGetHandler
 				else
 				{
 					log.info("serving file at path= " + path + " from " + file.getAbsolutePath());
-					IOUtils.copyLarge(FileUtil.getBufferedInputStream(file), outputStream);
+					try (InputStream inputStream = FileUtil.getBufferedInputStream(file))
+					{
+						IOUtils.copyLarge(inputStream, outputStream);
+					}
 				}
 			}
 			catch (final IOException x)
 			{
-				log.error("error serving file data for: " + path + " at: " + file);
+				log.error("error serving file data for: " + path + " at: " + file, x);
 			}
 		}
 		else
