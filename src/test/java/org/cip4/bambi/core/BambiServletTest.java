@@ -76,8 +76,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -152,7 +155,24 @@ public class BambiServletTest extends BambiTestCase
 		final HttpServletRequest req = mock(HttpServletRequest.class);
 		when(req.getRequestURL()).thenReturn(new StringBuffer(""));
 		when(req.getHeaderNames()).thenReturn(new Enus());
-		assertFalse(bs.doGetPost(req, mock(HttpServletResponse.class), true));
+		// the mocked response has no output stream, so writing the response fails
+		final HttpServletResponse resp = mock(HttpServletResponse.class);
+		assertTrue(bs.doGetPost(req, resp, true));
+		verify(resp).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	}
+
+	@Test
+	public void testDoGetPostNoErrorAfterCommit() throws Exception
+	{
+		startContainer();
+		final BambiServlet bs = new BambiServlet(new BambiServer());
+		final HttpServletRequest req = mock(HttpServletRequest.class);
+		when(req.getRequestURL()).thenReturn(new StringBuffer(""));
+		when(req.getHeaderNames()).thenReturn(new Enus());
+		final HttpServletResponse resp = mock(HttpServletResponse.class);
+		when(resp.isCommitted()).thenReturn(true);
+		assertTrue(bs.doGetPost(req, resp, true));
+		verify(resp, never()).sendError(anyInt());
 	}
 
 	/**

@@ -274,6 +274,8 @@ public final class BambiServlet extends HttpServlet
 					catch (final Throwable x)
 					{
 						log.error("Snafu processing " + request.getMethod() + " request for: " + request.getPathInfo(), x);
+						sendServerError(response);
+						processed = true;
 					}
 					final boolean bBuf = theContainer.wantDump() && (dumpGet || bPost) && bambiDumpIn != null;
 					if (bBuf)
@@ -298,6 +300,27 @@ public final class BambiServlet extends HttpServlet
 			log.warn("whazzap???", x);
 		}
 		return processed;
+	}
+
+	/**
+	 * report a failed request as 500 unless part of a response has already been sent
+	 *
+	 * @param response
+	 */
+	void sendServerError(final HttpServletResponse response)
+	{
+		if (response.isCommitted())
+		{
+			return;
+		}
+		try
+		{
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+		catch (final IOException | IllegalStateException x)
+		{
+			log.warn("cannot send error response", x);
+		}
 	}
 
 	boolean unAuthenticated(final HttpServletRequest request, final HttpServletResponse response) throws IOException
