@@ -97,6 +97,15 @@ public class BambiServerTest extends BambiTestCaseBase
 		}
 	}
 
+	@Test
+	public void testListEntriesExist() throws Exception
+	{
+		for (final String entry : readResourceList())
+		{
+			assertNotNull("listed in list.txt but not bundled: " + entry, BambiServer.class.getResource(entry));
+		}
+	}
+
 	private List<String> readResourceList() throws IOException
 	{
 		try (InputStream in = BambiServer.class.getResourceAsStream(BambiServer.RESOURCES_FILE))
