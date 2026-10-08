@@ -114,7 +114,8 @@ public class PushPullQueueProcessorTest extends BambiContainerTest
 
 		final String queueEntryID = "qe1";
 		returnQEParams.setQueueEntryID(queueEntryID);
-		final JDFDoc docJDF = JDFDoc.parseFile("C:\\data\\jdf\\foo.jdf");
+		final JDFDoc docJDF = JDFDoc.parseFile(sm_dirTestData + "IDPSimplex.jdf");
+		assertNotNull(docJDF);
 		returnQEParams.setURL("cid:dummy"); // will be overwritten by buildMimePackage
 		final MimeWriter mw = new MimeWriter();
 		mw.buildMimePackage(docJMF, docJDF, false);
