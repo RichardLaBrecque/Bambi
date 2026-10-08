@@ -44,6 +44,7 @@ import java.io.File;
 
 import org.cip4.bambi.BambiTestCaseBase;
 import org.cip4.jdflib.util.FileUtil;
+import org.cip4.jdflib.util.file.UserDir;
 import org.junit.Test;
 
 public class BambiServerTest extends BambiTestCaseBase
@@ -52,10 +53,10 @@ public class BambiServerTest extends BambiTestCaseBase
 	@Test
 	public void testCreate() throws Exception
 	{
-		final BambiServer s = new BambiServer();
+		final BambiServer s = new TempDirServer();
 		assertNotNull(s);
 		FileUtil.forceDelete(new File(s.getUserDir().getToolPath()));
-		final BambiServer s2 = new BambiServer();
+		final BambiServer s2 = new TempDirServer();
 		assertNotNull(s2);
 	}
 
@@ -69,7 +70,7 @@ public class BambiServerTest extends BambiTestCaseBase
 	@Test
 	public void testUnpack() throws Exception
 	{
-		final BambiServer s = new BambiServer();
+		final BambiServer s = new TempDirServer();
 		assertNotNull(s);
 		FileUtil.forceDelete(new File(s.getUserDir().getToolPath()));
 		BambiServer.unpackLines(s.getClass(), new File(sm_dirTestDataTemp + "out"), new ByteArrayInputStream("abc\n/data/test.icc\n".getBytes()));
@@ -82,4 +83,27 @@ public class BambiServerTest extends BambiTestCaseBase
 		assertNotNull(s.toString());
 	}
 
+	/**
+	 * server whose tool directory lives in the test temp directory, so tests that delete it do not wipe the real ~/CIP4Tools/bambi
+	 */
+	static class TempDirServer extends BambiServer
+	{
+		TempDirServer() throws Exception
+		{
+			super();
+		}
+
+		@Override
+		protected UserDir getUserDir()
+		{
+			return new UserDir(BAMBI)
+			{
+				@Override
+				public String getToolsPath()
+				{
+					return sm_dirTestDataTemp + "CIP4Tools";
+				}
+			};
+		}
+	}
 }
