@@ -149,12 +149,12 @@ public class DataRequestHandler extends BambiLogFactory implements IGetHandler
 			len = escape.length();
 			if (posData < 0)
 			{
-				posData = path.indexOf(UrlUtil.escape(dataToken, true));
-				len = escape.length();
+				final String escape128 = UrlUtil.escape(dataToken, true);
+				posData = path.indexOf(escape128);
+				len = escape128.length();
 			}
 		}
-		final String last = path.substring(posData + len);
-		return (posData < 0) ? null : last;
+		return (posData < 0) ? null : path.substring(posData + len);
 	}
 
 	/**

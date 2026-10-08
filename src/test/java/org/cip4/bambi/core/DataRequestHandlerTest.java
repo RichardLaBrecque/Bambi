@@ -291,6 +291,17 @@ public class DataRequestHandlerTest extends BambiTestCase
 		assertEquals("/a.pdf", rh.getRelativePath(request.getRequestURI()));
 	}
 
+	@Test
+	public void testRelativePathEscapedToken() throws Exception
+	{
+		final DataRequestHandler rh = new DataRequestHandler(getDevice(false, false), "däta dir");
+
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/däta dir/a.pdf"));
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/däta%20dir/a.pdf"));
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/d%c3%a4ta%20dir/a.pdf"));
+		assertNull(rh.getRelativePath("http://dev/blub/other/a.pdf"));
+	}
+
 	/**
 	 * @throws Exception its a test!
 	 */
