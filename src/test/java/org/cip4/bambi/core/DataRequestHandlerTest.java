@@ -75,6 +75,7 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.cip4.bambi.BambiTestCase;
 import org.cip4.bambi.core.MultiDeviceProperties.DeviceProperties;
 import org.cip4.jdflib.util.ByteArrayIOStream;
@@ -191,6 +192,20 @@ public class DataRequestHandlerTest extends BambiTestCase
 		assertNotNull(rh.handleGet(request));
 	}
 
+	@Test
+	public void testHandleServesContent() throws Exception
+	{
+		final DataRequestHandler rh = new DataRequestHandler(getDevice(false, false), "data");
+		final ContainerRequest request = new ContainerRequest();
+		request.setRequestURI("http://dev/blub/data/content.txt");
+		final File file = new File(rh.getDataDir(request), "content.txt");
+		FileUtil.streamToFile(new ByteArrayIOStream("blahblah".getBytes()).getInputStream(), file);
+
+		final XMLResponse resp = rh.handleGet(request);
+
+		assertEquals("blahblah", new String(IOUtils.toByteArray(resp.getInputStream())));
+	}
+
 	/**
 	 * @throws Exception its a test!
 	 */
@@ -274,6 +289,17 @@ public class DataRequestHandlerTest extends BambiTestCase
 		request.setRequestURI("http://dev/blub/data//a.pdf");
 
 		assertEquals("/a.pdf", rh.getRelativePath(request.getRequestURI()));
+	}
+
+	@Test
+	public void testRelativePathEscapedToken() throws Exception
+	{
+		final DataRequestHandler rh = new DataRequestHandler(getDevice(false, false), "däta dir");
+
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/däta dir/a.pdf"));
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/däta%20dir/a.pdf"));
+		assertEquals("a.pdf", rh.getRelativePath("http://dev/blub/d%c3%a4ta%20dir/a.pdf"));
+		assertNull(rh.getRelativePath("http://dev/blub/other/a.pdf"));
 	}
 
 	/**
