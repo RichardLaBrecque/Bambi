@@ -292,7 +292,7 @@ public class BambiServer extends JettyServer
 		}
 		catch (final IOException e)
 		{
-			line = null;
+			log.error("Error reading resource list, resources may be incomplete", e);
 		}
 	}
 
