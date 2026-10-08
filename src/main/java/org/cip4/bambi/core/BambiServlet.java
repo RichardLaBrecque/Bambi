@@ -257,34 +257,41 @@ public final class BambiServlet extends HttpServlet
 				final long t0 = System.currentTimeMillis();
 				final AbstractDevice rootDev = theContainer.getRootDev();
 				rootDev.startWork();
-
-				final StreamRequest sr = StreamRequest.createStreamRequest(request);
-
-				HTTPResponse httpResp = null;
 				try
 				{
-					httpResp = theContainer.processRestStream(sr);
-					if (httpResp != null)
+					final StreamRequest sr = StreamRequest.createStreamRequest(request);
+
+					HTTPResponse httpResp = null;
+					try
 					{
-						httpResp.writeResponse(response);
+						httpResp = theContainer.processRestStream(sr);
+						if (httpResp != null)
+						{
+							httpResp.writeResponse(response);
+							processed = true;
+						}
+					}
+					catch (final Throwable x)
+					{
+						log.error("Snafu processing " + request.getMethod() + " request for: " + request.getPathInfo(), x);
+						sendServerError(response);
 						processed = true;
 					}
+					final boolean bBuf = theContainer.wantDump() && (dumpGet || bPost) && bambiDumpIn != null;
+					if (bBuf)
+					{
+						dumpIncoming(request, bBuf, sr);
+						dumpOutGoing(request.getMethod(), sr, httpResp);
+					}
+					StreamUtil.close(request.getInputStream()); // avoid mem leaks
+					if (serviced++ < 10 || (serviced % 1000) == 0)
+					{
+						log.info("Processed " + request.getMethod() + " for URL: " + request.getRequestURL().toString() + " #" + serviced + " dt=" + (System.currentTimeMillis() - t0));
+					}
 				}
-				catch (final Throwable x)
+				finally
 				{
-					log.error("Snafu processing " + request.getMethod() + " request for: " + request.getPathInfo(), x);
-				}
-				final boolean bBuf = theContainer.wantDump() && (dumpGet || bPost) && bambiDumpIn != null;
-				if (bBuf)
-				{
-					dumpIncoming(request, bBuf, sr);
-					dumpOutGoing(request.getMethod(), sr, httpResp);
-				}
-				StreamUtil.close(request.getInputStream()); // avoid mem leaks
-				rootDev.endWork();
-				if (serviced++ < 10 || (serviced % 1000) == 0)
-				{
-					log.info("Processed " + request.getMethod() + " for URL: " + request.getRequestURL().toString() + " #" + serviced + " dt=" + (System.currentTimeMillis() - t0));
+					rootDev.endWork();
 				}
 			}
 		}
@@ -293,6 +300,27 @@ public final class BambiServlet extends HttpServlet
 			log.warn("whazzap???", x);
 		}
 		return processed;
+	}
+
+	/**
+	 * report a failed request as 500 unless part of a response has already been sent
+	 *
+	 * @param response
+	 */
+	void sendServerError(final HttpServletResponse response)
+	{
+		if (response.isCommitted())
+		{
+			return;
+		}
+		try
+		{
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+		catch (final IOException | IllegalStateException x)
+		{
+			log.warn("cannot send error response", x);
+		}
 	}
 
 	boolean unAuthenticated(final HttpServletRequest request, final HttpServletResponse response) throws IOException
