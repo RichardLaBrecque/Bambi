@@ -186,9 +186,10 @@ public class DataRequestHandlerTest extends BambiTestCase
 		final ContainerRequest request = new ContainerRequest();
 		request.setRequestURI("http://dev/blub/data/a%20b.pdf");
 
-		final File file = new File(sm_dirTestDataTemp + "ID_42/JDF/a b.pdf");
-		FileUtil.createNewFile(file);
-		assertNotNull(rh.handleGet(request));
+		final File file = new File(rh.getDataDir(request), "a b.pdf");
+		FileUtil.streamToFile(new ByteArrayIOStream("escaped".getBytes()).getInputStream(), file);
+		final XMLResponse resp = rh.handleGet(request);
+		assertEquals("escaped", new String(new ByteArrayIOStream(resp.getInputStream()).toByteArray()));
 	}
 
 	/**
