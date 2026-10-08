@@ -1,7 +1,4 @@
 /list.txt
-/bambi-ngui-1.0.war
-
-/config/bambi-buildtime.properties
 
 /config/devices.xml
 /config/employees.xml
@@ -11,6 +8,8 @@
 /config/job_sim002.xml
 /config/job_sim003.xml
 /config/job_simIDP.xml
+/config/job_simPress.xml
+/config/job_simRIP.xml
 /config/job_simWF.xml
 /config/resinfo_simIDP.xml
 
@@ -26,7 +25,6 @@
 /legacy/styles/bambi-logo.png
 /legacy/styles/favicon.ico
 
-/legacy/CPUTimer.xsl
 /legacy/DeviceDetails.xsl
 /legacy/DeviceExtension.xsl
 /legacy/deviceList.xsl
@@ -45,9 +43,7 @@
 /legacy/showDevice.xsl
 /legacy/StandardXML.xsl
 /legacy/subscriptionDetails.xsl
-/legacy/SubscriptionExtension.xsl
 /legacy/subscriptionList.xsl
-/legacy/topnavigation.xsl
 /legacy/xjdf.xsl
 
 
