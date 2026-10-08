@@ -38,6 +38,8 @@ package org.cip4.bambi.server;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -64,6 +66,14 @@ public class BambiServerTest extends BambiTestCaseBase
 	{
 		final BambiServer s = new BambiServer();
 		assertTrue(s.isAuthenticated(null, null));
+	}
+
+	@Test
+	public void testUnpackClosesList() throws Exception
+	{
+		final ByteArrayInputStream list = spy(new ByteArrayInputStream("/data/test.icc\n".getBytes()));
+		BambiServer.unpackLines(BambiServer.class, new File(sm_dirTestDataTemp + "out"), list);
+		verify(list).close();
 	}
 
 	@Test
