@@ -258,9 +258,8 @@ public class BambiServer extends JettyServer
 
 	static void unpackLines(final Class<? extends Object> myClass, final File toolDir, final InputStream listStream)
 	{
-		final BufferedReader r = new BufferedReader(new InputStreamReader(listStream));
 		String line = null;
-		try
+		try (BufferedReader r = new BufferedReader(new InputStreamReader(listStream)))
 		{
 			while ((line = r.readLine()) != null)
 			{
