@@ -19,7 +19,7 @@ RUN apk add --no-cache dos2unix
 WORKDIR /work
 
 RUN dos2unix gradlew
-RUN ./gradlew -i installDist -PprojectVersion=${VERSION} -PbuildNumber=${BUILD_NUMBER} --no-daemon >/dev/null
+RUN ./gradlew installDist -PprojectVersion=${VERSION} -PbuildNumber=${BUILD_NUMBER} --no-daemon
 
 # create final image
 FROM amazoncorretto:17-alpine
